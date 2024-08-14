@@ -1,11 +1,8 @@
-from rest_framework import serializers, status
+from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.db.models import F
-from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
 
 from .models import Recipe, Tag, Ingredients, RecipeIngredients
-from users.models import Follow
 from users.serializers import UserListSerializer, Base64ImageField
 from recipes.exceptions import CustomAPIException
 
@@ -27,25 +24,6 @@ class IngredientsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredients
         fields = '__all__'
-
-
-class FollowSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели подписок."""
-
-    following = serializers.SlugRelatedField(
-        slug_field='username',
-        queryset=User.objects.all(),
-    )
-
-    user = serializers.SlugRelatedField(
-        slug_field='username',
-        required=False,
-        queryset=User.objects.all(),
-    )
-
-    class Meta:
-        fields = ('user', 'following')
-        model = Follow
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -97,6 +75,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientRecipeWriteSerializer(serializers.ModelSerializer):
+    """Сериализатор для записи в промежуточную модель."""
+
     id = serializers.IntegerField(write_only=True)
 
     class Meta:
@@ -107,8 +87,9 @@ class IngredientRecipeWriteSerializer(serializers.ModelSerializer):
 class RecipeWriteSerializer(serializers.ModelSerializer):
     """Сериализатор для создания рецепта."""
 
-    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(),
-                                  many=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(), many=True
+    )
     author = UserListSerializer(read_only=True)
     ingredients = IngredientRecipeWriteSerializer(many=True)
     image = Base64ImageField()
@@ -152,11 +133,15 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def validate_tags(self, value):
         tags = value
         if not tags:
-            raise serializers.ValidationError({'tags': 'Нужно выбрать хотя бы один тег!'})
+            raise serializers.ValidationError(
+                {'tags': 'Нужно выбрать хотя бы один тег!'}
+            )
         tags_list = []
         for tag in tags:
             if tag in tags_list:
-                raise serializers.ValidationError({'tags': 'Теги должны быть уникальными!'})
+                raise serializers.ValidationError(
+                    {'tags': 'Теги должны быть уникальными!'}
+                )
             tags_list.append(tag)
         return value
 
@@ -181,7 +166,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request.user != instance.author:
             raise CustomAPIException('Denied !')
-        if validated_data.get('ingredients', None) is None or validated_data.get('tags', None) is None:
+        if (
+            validated_data.get('ingredients', None) is None
+            or validated_data.get('tags', None) is None
+        ):
             raise serializers.ValidationError('tags or ingredients missing.')
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
@@ -189,13 +177,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         instance.tags.clear()
         instance.tags.set(tags)
         instance.ingredients.clear()
-        self.create_ingredients_amounts(recipe=instance, ingredients=ingredients)
+        self.create_ingredients_amounts(
+            recipe=instance, ingredients=ingredients
+        )
         instance.save()
         return instance
-    
-    def destroy(self, request, pk):
-        recipe = Recipe.objects.get(id=pk)
-        breakpoint()
 
     def to_representation(self, instance):
         request = self.context.get('request')

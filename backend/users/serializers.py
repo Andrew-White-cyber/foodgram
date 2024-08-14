@@ -3,8 +3,6 @@ import base64
 
 from rest_framework import serializers, status
 from django.core.files.base import ContentFile
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from django.utils.text import gettext_lazy as _
 from django.contrib.auth import get_user_model
 
 from .models import Follow
@@ -14,6 +12,8 @@ User = get_user_model()
 
 
 class Base64ImageField(serializers.ImageField):
+    """Собственное поле для изображений."""
+
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
             format, imgstr = data.split(';base64,')
@@ -47,11 +47,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'password', 'first_name', 'last_name', 'avatar',]
+        fields = [
+            'id', 'email', 'username', 'password',
+            'first_name', 'last_name', 'avatar'
+        ]
         extra_kwargs = {
             'password': {'write_only': True},
             'avatar': {'required': False},
-            }
+        }
 
     def validate_username(self, value):
         if value.lower() == 'me':
@@ -67,7 +70,9 @@ class UserSerializer(serializers.ModelSerializer):
         first_name = data.get('first_name', None)
         last_name = data.get('last_name', None)
         if first_name is None or last_name is None:
-            raise serializers.ValidationError('first or last name is missing !')
+            raise serializers.ValidationError(
+                'first or last name is missing !'
+            )
         email = data.get('email', None)
         username = data.get('username', None)
         user_username = User.objects.filter(username=username)

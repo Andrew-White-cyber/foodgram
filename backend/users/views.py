@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, status
 from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework.permissions import (
     IsAuthenticated,
@@ -7,21 +7,15 @@ from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly
 )
 from rest_framework.response import Response
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework import filters
-from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 
 
 from .serializers import (
     UserSerializer, TokenObtainSerializer, UserPasswordSerializer,
     UserListSerializer, RecipeMinifiedSerializer, SubscribeSerializer
-    )
+)
 from users.models import Follow
-from recipes.serializers import FollowSerializer
 from foodgram_backend import settings, pagination
 
 User = get_user_model()
@@ -58,10 +52,16 @@ class UserViewSet(viewsets.ModelViewSet):
                                                              many=True).data
         return representation
 
-    @action(methods=['POST',], permission_classes=(IsAuthenticated,), detail=False)
+    @action(
+        methods=['POST',], permission_classes=(IsAuthenticated,),
+        detail=False
+    )
     def set_password(self, request):
         """Изменение пароля."""
-        serializer = UserPasswordSerializer(request.user, data=request.data, partial=True, context={'request': request})
+        serializer = UserPasswordSerializer(
+            request.user, data=request.data,
+            partial=True, context={'request': request}
+        )
         user = request.user
         data = request.data
         if user.password != data['current_password']:
@@ -87,17 +87,19 @@ class UserViewSet(viewsets.ModelViewSet):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                if 'role' not in request.data:
-                    serializer = UserSerializer(
-                        request.user,
-                        data=request.data,
-                        partial=True)
-                    serializer.is_valid(raise_exception=True)
-                    serializer.save()
-                    return Response(serializer.data, status=status.HTTP_200_OK)
+                serializer = UserSerializer(
+                    request.user,
+                    data=request.data,
+                    partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['put', 'delete'], permission_classes=[IsAuthenticated], url_path='me/avatar')
+    @action(
+        detail=False, methods=['put', 'delete'],
+        permission_classes=[IsAuthenticated], url_path='me/avatar'
+    )
     def avatar(self, request):
         """Аватар."""
         user = request.user
@@ -119,7 +121,10 @@ class UserViewSet(viewsets.ModelViewSet):
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated], url_path='subscribe')
+    @action(
+        detail=True, methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated], url_path='subscribe'
+    )
     def subscribe(self, request, **kwargs):
         user = request.user
         author_id = self.kwargs.get('pk')
@@ -135,7 +140,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if request.method == 'DELETE':
             try:
-                subscription = Follow.objects.get(user=user, following=following)
+                subscription = Follow.objects.get(
+                    user=user, following=following
+                )
             except Exception:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             subscription.delete()
@@ -171,6 +178,11 @@ def user_logout(request):
     if request.method == 'POST':
         try:
             request.user.auth_token.delete()
-            return Response({'message': 'Successfully logged out.'}, status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                {'message': 'Successfully logged out.'},
+                status=status.HTTP_204_NO_CONTENT
+            )
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

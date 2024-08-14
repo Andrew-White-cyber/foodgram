@@ -12,15 +12,20 @@ from rest_framework.permissions import (
     SAFE_METHODS,
 )
 from rest_framework.response import Response
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.decorators import action
 from rest_framework import filters, status
 from django.contrib.auth import get_user_model
 
-from .models import Recipe, Tag, Ingredients, FavoriteRecipe, ShoppingCart, RecipeIngredients
+from .models import (
+    Recipe, Tag, Ingredients,
+    FavoriteRecipe, ShoppingCart, RecipeIngredients
+)
 from users.models import Follow
 from .mixins import ListRetriveViewSet
-from .serializers import RecipeSerializer, IngredientsSerializer, TagSerializer, FollowSerializer, RecipeWriteSerializer, RecipeShortSerializer
+from .serializers import (
+    RecipeSerializer, IngredientsSerializer, TagSerializer,
+    FollowSerializer, RecipeWriteSerializer, RecipeShortSerializer
+)
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .filters import IngredientFilter, RecipeFilter
 from foodgram_backend.pagination import CustomPagination
@@ -55,7 +60,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
+    @action(
+        detail=True, methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
+    )
     def favorite(self, request, pk):
         """Добавить рецепт в избранное."""
         if request.method == 'POST':
@@ -63,7 +71,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         else:
             return self.delete_from(FavoriteRecipe, request.user, pk)
 
-    @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
+    @action(
+        detail=True, methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
+    )
     def shopping_cart(self, request, pk):
         """Добавить в корзину."""
         if request.method == 'POST':
@@ -73,7 +84,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def add_to(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
-            return Response({'errors': 'Рецепт уже добавлен!'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': 'Рецепт уже добавлен!'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         recipe = get_object_or_404(Recipe, id=pk)
         model.objects.create(user=user, recipe=recipe)
         serializer = RecipeShortSerializer(recipe)
@@ -85,7 +99,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if obj.exists():
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response({'errors': 'Рецепт уже удален!'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'errors': 'Рецепт уже удален!'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=True, methods=('get',), url_path='get-link')
     def get_short_link(self, request, pk):
@@ -146,7 +163,6 @@ class IngredientsViewSet(ListRetriveViewSet):
 
     queryset = Ingredients.objects.all()
     serializer_class = IngredientsSerializer
-    # permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
     pagination_class = None

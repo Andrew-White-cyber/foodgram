@@ -12,8 +12,12 @@ class MyUser(AbstractUser):
         null=True,
         default=None
     )
-    email = models.EmailField('Почта', blank=False, unique=True, max_length=250)
-    username = models.CharField('Имя пользователя', blank=False, unique=True, max_length=150)
+    email = models.EmailField(
+        'Почта', blank=False, unique=True, max_length=250
+    )
+    username = models.CharField(
+        'Имя пользователя', blank=False, unique=True, max_length=150
+    )
     password = models.CharField('Пароль', blank=False, max_length=250)
 
 

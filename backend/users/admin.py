@@ -1,8 +1,10 @@
 from django.contrib import admin
-from django.db.models.aggregates import Count
 
 from .models import MyUser
-from recipes.models import Ingredients, Tag, Recipe, ShoppingCart, FavoriteRecipe, RecipeIngredients, RecipeTags
+from recipes.models import (
+    Ingredients, Tag, Recipe, ShoppingCart,
+    FavoriteRecipe, RecipeIngredients, RecipeTags
+)
 
 
 class MyUserAdmin(admin.ModelAdmin):

@@ -24,7 +24,7 @@ from users.models import Follow
 from .mixins import ListRetriveViewSet
 from .serializers import (
     RecipeSerializer, IngredientsSerializer, TagSerializer,
-    FollowSerializer, RecipeWriteSerializer, RecipeShortSerializer
+    RecipeWriteSerializer, RecipeShortSerializer
 )
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .filters import IngredientFilter, RecipeFilter
@@ -164,30 +164,6 @@ class IngredientsViewSet(ListRetriveViewSet):
     queryset = Ingredients.objects.all()
     serializer_class = IngredientsSerializer
     filter_backends = (DjangoFilterBackend,)
+    permission_classes = [AllowAny]
     filterset_class = IngredientFilter
     pagination_class = None
-
-
-class FollowViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
-):
-    """ВьюСет для модели подписок."""
-
-    serializer_class = FollowSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ('following__username',)
-
-    def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def get_serializer_context(self):
-        return {
-            'request': self.request,
-        }

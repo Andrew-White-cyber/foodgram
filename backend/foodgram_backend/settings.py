@@ -11,24 +11,24 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+
+load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-m!q3%(2y+k2z=!js8k6_o2bek0^2412hry89d%qjli%*pooin-')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-m!q3%(2y+k2z=!js8k6_o2bek0^2412hry89d%qjli%*pooin-'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+HOSTS = os.getenv('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = HOSTS.split(',')
 
 
-# Application definition
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -93,6 +93,14 @@ DATABASES = {
 }
 
 
+'''DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}'''
+
+
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -130,7 +138,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'collected_static'
+
 MEDIA_URL = '/media/'
+MEDIA_ROOT = '/app/media'
 
 AUTH_USER_MODEL = 'users.MyUser'
 

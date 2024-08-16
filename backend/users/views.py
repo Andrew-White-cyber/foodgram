@@ -13,7 +13,8 @@ from rest_framework.authtoken.models import Token
 
 from .serializers import (
     UserSerializer, TokenObtainSerializer, UserPasswordSerializer,
-    UserListSerializer, RecipeMinifiedSerializer, SubscribeSerializer
+    UserListSerializer, RecipeMinifiedSerializer, SubscribeSerializer,
+    AvatarSerializer
 )
 from users.models import Follow
 from foodgram_backend import settings, pagination
@@ -106,12 +107,13 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'PUT':
             if 'avatar' not in request.data:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            serializer = UserSerializer(user, data=request.data, partial=True)
+            serializer = AvatarSerializer(user, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             avatar_url = serializer.data.get('avatar')
-            full_avatar_url = f'{settings.MEDIA_URL}{avatar_url}'
+            full_avatar_url = f'{avatar_url}'
             response_data = {'avatar': full_avatar_url}
+            # breakpoint()
             return Response(response_data, status=status.HTTP_200_OK)
         if request.method == 'DELETE':
             if not user.avatar:

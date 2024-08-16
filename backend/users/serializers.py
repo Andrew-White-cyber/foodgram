@@ -69,7 +69,9 @@ class UserSerializer(serializers.ModelSerializer):
     def validate(self, data):
         first_name = data.get('first_name', None)
         last_name = data.get('last_name', None)
-        if first_name is None or last_name is None:
+        avatar = data.get('avatar', None)
+        # breakpoint()
+        if (first_name is None or last_name is None) and avatar is None:
             raise serializers.ValidationError(
                 'first or last name is missing !'
             )
@@ -104,6 +106,16 @@ class TokenObtainSerializer(serializers.Serializer):
         fields = (
             'email',
         )
+
+
+class AvatarSerializer(serializers.ModelSerializer):
+    """Сериализатор для аватарки."""
+
+    avatar = Base64ImageField(use_url=True, required=False)
+
+    class Meta:
+        model = User
+        fields = ('avatar',)
 
 
 class UserListSerializer(serializers.ModelSerializer):

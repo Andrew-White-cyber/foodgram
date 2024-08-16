@@ -17,7 +17,7 @@ from .serializers import (
     AvatarSerializer
 )
 from users.models import Follow
-from foodgram_backend import settings, pagination
+from foodgram_backend import pagination
 
 User = get_user_model()
 
@@ -107,7 +107,9 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'PUT':
             if 'avatar' not in request.data:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            serializer = AvatarSerializer(user, data=request.data, partial=True)
+            serializer = AvatarSerializer(
+                user, data=request.data, partial=True
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             avatar_url = serializer.data.get('avatar')

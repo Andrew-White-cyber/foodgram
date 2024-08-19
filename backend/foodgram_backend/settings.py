@@ -167,7 +167,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-   'AUTH_HEADER_TYPES': ('JWT',),
+    'AUTH_HEADER_TYPES': ('JWT',),
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

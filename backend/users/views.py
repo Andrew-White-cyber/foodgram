@@ -54,7 +54,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return representation
 
     @action(
-        methods=['POST',], permission_classes=(IsAuthenticated,),
+        methods=['POST', ], permission_classes=(IsAuthenticated,),
         detail=False
     )
     def set_password(self, request):

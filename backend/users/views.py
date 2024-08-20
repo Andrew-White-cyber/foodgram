@@ -65,10 +65,14 @@ class UserViewSet(viewsets.ModelViewSet):
         )
         user = request.user
         data = request.data
+        # breakpoint()
         if user.password != data['current_password']:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        user.password = data['new_password']
+        user.save()
+        # breakpoint()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(methods=['GET', 'PATCH'], detail=False,
@@ -77,6 +81,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """Профиль пользователя."""
         serializer = UserListSerializer(request.user)
         if request.method == 'GET':
+            # breakpoint()
             return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == 'PATCH':
             if request.user.is_admin:
@@ -137,7 +142,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             serializer = SubscribeSerializer(following,
                                              data=request.data,
-                                             context={"request": request})
+                                             context={'request': request})
             serializer.is_valid(raise_exception=True)
             Follow.objects.create(user=user, following=following)
             return Response(serializer.data, status=status.HTTP_201_CREATED)

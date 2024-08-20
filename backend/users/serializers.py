@@ -5,7 +5,6 @@ from rest_framework import serializers, status
 from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
 
-from .models import Follow
 from recipes.models import Recipe
 
 User = get_user_model()
@@ -140,9 +139,10 @@ class UserListSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and hasattr(request, 'user'):
             user = request.user
+            # breakpoint()
             if user.is_anonymous:
                 return False
-            return Follow.objects.filter(user=user, following=obj).exists()
+            return (user.followers.all().exists()) and (user != obj)
         return False
 
 
@@ -170,14 +170,15 @@ class SubscribeSerializer(UserListSerializer):
         read_only_fields = ('email', 'username')
 
     def validate(self, data):
-        following = self.instance
-        user = self.context.get('request').user
-        if Follow.objects.filter(following=following, user=user).exists():
+        user_for_subscription = self.instance
+        user = self.context['request'].user
+        # breakpoint()
+        if user_for_subscription.following.all().exists():
             raise serializers.ValidationError(
                 detail='Вы уже подписаны на этого пользователя!',
                 code=status.HTTP_400_BAD_REQUEST
             )
-        if user == following:
+        if user == user_for_subscription:
             raise serializers.ValidationError(
                 detail='Вы не можете подписаться на самого себя!',
                 code=status.HTTP_400_BAD_REQUEST

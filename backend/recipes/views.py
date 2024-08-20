@@ -67,8 +67,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Добавить рецепт в избранное."""
         if request.method == 'POST':
             return self.add_to(FavoriteRecipe, request.user, pk)
-        else:
-            return self.delete_from(FavoriteRecipe, request.user, pk)
+        return self.delete_from(FavoriteRecipe, request.user, pk)
 
     @action(
         detail=True, methods=['post', 'delete'],
@@ -78,8 +77,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Добавить в корзину."""
         if request.method == 'POST':
             return self.add_to(ShoppingCart, request.user, pk)
-        else:
-            return self.delete_from(ShoppingCart, request.user, pk)
+        return self.delete_from(ShoppingCart, request.user, pk)
 
     def add_to(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
@@ -93,8 +91,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete_from(self, model, user, pk):
-        obj = get_object_or_404(model, user=user, recipe__id=pk)
         obj = model.objects.filter(user=user, recipe__id=pk)
+        # breakpoint()
         if obj.exists():
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -110,8 +108,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         short_url = shortener.tinyurl.short(
             request.build_absolute_uri()
             .replace('/api', '')
-            .replace('/get-link', '')
+            .replace('/get-link/', '')
         )
+        # breakpoint()
         return Response({'short-link': short_url})
 
     @action(detail=False, permission_classes=[IsAuthenticated])

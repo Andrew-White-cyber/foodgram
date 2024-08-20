@@ -9,6 +9,9 @@ from recipes.exceptions import CustomAPIException
 
 User = get_user_model()
 
+MIN_VALUE = 1
+MAX_VALUE = 32000
+
 
 class TagSerializer(serializers.ModelSerializer):
     """Сериализатор модели тэгов."""
@@ -62,13 +65,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         return ingredients
 
     def get_is_favorited(self, obj):
-        user = self.context.get('request').user
+        user = self.context['request'].user
         if user.is_anonymous:
             return False
         return user.favorite_recipes.filter(recipe=obj).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        user = self.context.get('request').user
+        user = self.context['request'].user
         if user.is_anonymous:
             return False
         return user.shopping_cart.filter(recipe=obj).exists()
@@ -78,6 +81,7 @@ class IngredientRecipeWriteSerializer(serializers.ModelSerializer):
     """Сериализатор для записи в промежуточную модель."""
 
     id = serializers.IntegerField(write_only=True)
+    amount = serializers.IntegerField(min_value=MIN_VALUE, max_value=MAX_VALUE)
 
     class Meta:
         model = RecipeIngredients
@@ -93,6 +97,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     author = UserListSerializer(read_only=True)
     ingredients = IngredientRecipeWriteSerializer(many=True)
     image = Base64ImageField()
+    cooking_time = serializers.IntegerField(
+        min_value=MIN_VALUE, max_value=MAX_VALUE
+    )
 
     class Meta:
         model = Recipe
@@ -113,7 +120,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'ingredients': 'Нужен хотя бы один ингредиент!'
             })
-        ingredients_list = []
+        ingredients_list = set()
         for item in ingredients:
             try:
                 ingredient = Ingredients.objects.get(id=item['id'])
@@ -123,11 +130,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     'ingredients': 'Ингридиенты не могут повторяться!'
                 })
-            if int(item['amount']) <= 0:
-                raise serializers.ValidationError({
-                    'amount': 'Количество ингредиента должно быть больше 0!'
-                })
-            ingredients_list.append(ingredient)
+            ingredients_list.add(ingredient)
         return value
 
     def validate_tags(self, value):

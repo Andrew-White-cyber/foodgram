@@ -13,7 +13,6 @@ router_v1.register(r'ingredients', IngredientsViewSet)
 router_v1.register(r'users', UserViewSet)
 
 urlpatterns = [
-    # path('auth/', include('djoser.urls.authtoken')),
     path('auth/token/login/', get_jwt_token),
     path('auth/token/logout/', user_logout),
     path('', include(router_v1.urls)),

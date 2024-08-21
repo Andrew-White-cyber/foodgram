@@ -4,7 +4,7 @@ from django.db.models import F
 
 from .models import Recipe, Tag, Ingredients, RecipeIngredients
 from users.serializers import UserListSerializer, Base64ImageField
-from recipes.exceptions import CustomAPIException
+from .exceptions import CustomAPIException
 
 
 User = get_user_model()
@@ -120,17 +120,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'ingredients': 'Нужен хотя бы один ингредиент!'
             })
-        ingredients_list = set()
+        ingredients_set = set()
         for item in ingredients:
             try:
                 ingredient = Ingredients.objects.get(id=item['id'])
-            except Exception:
+            except Ingredients.DoesNotExist:
                 raise serializers.ValidationError()
-            if ingredient in ingredients_list:
+            if ingredient in ingredients_set:
                 raise serializers.ValidationError({
                     'ingredients': 'Ингридиенты не могут повторяться!'
                 })
-            ingredients_list.add(ingredient)
+            ingredients_set.add(ingredient)
         return value
 
     def validate_tags(self, value):
@@ -139,13 +139,13 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'tags': 'Нужно выбрать хотя бы один тег!'}
             )
-        tags_list = []
+        tags_set = set()
         for tag in tags:
-            if tag in tags_list:
+            if tag in tags_set:
                 raise serializers.ValidationError(
                     {'tags': 'Теги должны быть уникальными!'}
                 )
-            tags_list.append(tag)
+            tags_set.add(tag)
         return value
 
     def create_ingredients_amounts(self, ingredients, recipe):

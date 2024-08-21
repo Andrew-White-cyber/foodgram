@@ -1,6 +1,6 @@
 from datetime import datetime
-import pyshorteners
 
+import pyshorteners
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -92,7 +92,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def delete_from(self, model, user, pk):
         obj = model.objects.filter(user=user, recipe__id=pk)
-        # breakpoint()
         if obj.exists():
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -110,7 +109,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             .replace('/api', '')
             .replace('/get-link/', '')
         )
-        # breakpoint()
         return Response({'short-link': short_url})
 
     @action(detail=False, permission_classes=[IsAuthenticated])

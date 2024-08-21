@@ -69,7 +69,6 @@ class UserSerializer(serializers.ModelSerializer):
         first_name = data.get('first_name', None)
         last_name = data.get('last_name', None)
         avatar = data.get('avatar', None)
-        # breakpoint()
         if (first_name is None or last_name is None) and avatar is None:
             raise serializers.ValidationError(
                 'first or last name is missing !'
@@ -139,7 +138,6 @@ class UserListSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and hasattr(request, 'user'):
             user = request.user
-            # breakpoint()
             if user.is_anonymous:
                 return False
             return (user.followers.all().exists()) and (user != obj)
@@ -172,7 +170,6 @@ class SubscribeSerializer(UserListSerializer):
     def validate(self, data):
         user_for_subscription = self.instance
         user = self.context['request'].user
-        # breakpoint()
         if user_for_subscription.following.all().exists():
             raise serializers.ValidationError(
                 detail='Вы уже подписаны на этого пользователя!',

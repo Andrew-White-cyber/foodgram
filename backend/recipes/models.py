@@ -1,8 +1,13 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+# from .serializers import MAX_VALUE, MIN_VALUE
 
 User = get_user_model()
+
+MIN_VALUE = 1
+MAX_VALUE = 32000
 
 
 class Tag(models.Model):
@@ -46,8 +51,12 @@ class Recipe(models.Model):
         'Время приготовления в минутах.',
         validators=[
             MinValueValidator(
-                1,
-                'Нельзя приготовить быстрее чем за 1 минуту !'
+                     MIN_VALUE,
+                     f'Нельзя приготовить быстрее чем за {MIN_VALUE}'
+            ),
+            MaxValueValidator(
+                     MAX_VALUE,
+                     f'Время приготовления не может быть выше {MAX_VALUE}'
             )
         ]
     )
@@ -63,7 +72,16 @@ class RecipeIngredients(models.Model):
     ingredients = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
     amount = models.PositiveSmallIntegerField(
         'Количество',
-        validators=[MinValueValidator(1, message='Минимальное количество 1!')]
+        validators=[
+            MinValueValidator(
+                MIN_VALUE,
+                message=f'Минимальное количество {MIN_VALUE}!'
+            ),
+            MaxValueValidator(
+                MAX_VALUE,
+                message=f'Максимальное количество {MAX_VALUE}!'
+            )
+        ]
     )
 
 

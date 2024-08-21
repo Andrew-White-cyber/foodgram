@@ -51,12 +51,12 @@ class Recipe(models.Model):
         'Время приготовления в минутах.',
         validators=[
             MinValueValidator(
-                    MIN_VALUE,
-                    f'Нельзя приготовить быстрее чем за {MIN_VALUE}'
+                MIN_VALUE,
+                f'Нельзя приготовить быстрее чем за {MIN_VALUE}'
             ),
             MaxValueValidator(
-                    MAX_VALUE,
-                    f'Время приготовления не может быть выше {MAX_VALUE}'
+                MAX_VALUE,
+                f'Время приготовления не может быть выше {MAX_VALUE}'
             )
         ]
     )
